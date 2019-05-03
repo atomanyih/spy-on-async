@@ -2,9 +2,9 @@
   "name": "spy-on-async",
   "version": "1.0.0",
   "description": "async testing helpers for jest",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest"
   },
   "keywords": [
     "jest",
@@ -19,6 +19,8 @@
   "author": "August Toman-Yih",
   "license": "ISC",
   "devDependencies": {
+    "@babel/preset-env": "^7.4.4",
+    "babel-jest": "^24.7.1",
     "jest": "^24.7.1"
   }
 }
