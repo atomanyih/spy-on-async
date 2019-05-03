@@ -1,4 +1,65 @@
-import {createAsyncMock} from './index';
+import {createAsyncMock, spyOnAsync} from './index';
+
+describe('spyOnAsync', () => {
+  let underlyingImplementation;
+  let objectToSpyOn;
+
+  beforeEach(() => {
+    underlyingImplementation = jest.fn();
+    objectToSpyOn = {
+      someMethod: (...args) => underlyingImplementation(...args)
+    };
+
+    spyOnAsync(objectToSpyOn, 'someMethod');
+  });
+
+  it('does not call the underlying implementation', () => {
+    objectToSpyOn.someMethod();
+
+    expect(underlyingImplementation).not.toHaveBeenCalled();
+  });
+
+  it('returns a promise that can be resolved through the method', async () => {
+    let result;
+    let error;
+
+    objectToSpyOn.someMethod()
+      .then(res => result = res)
+      .catch(err => error = err);
+
+    expect(result).toBeUndefined();
+    expect(error).toBeUndefined();
+
+    await objectToSpyOn.someMethod.mock.resolve('result');
+
+    expect(result).toEqual('result');
+    expect(error).toEqual(undefined);
+  });
+
+  it('returns a promise that can be rejected through the method', async () => {
+    let result;
+    let error;
+
+    objectToSpyOn.someMethod()
+      .then(res => result = res)
+      .catch(err => error = err);
+
+    expect(result).toBeUndefined();
+    expect(error).toBeUndefined();
+
+    await objectToSpyOn.someMethod.mock.reject('error');
+
+    expect(result).toEqual(undefined);
+    expect(error).toEqual('error');
+
+  });
+
+  it('can be asserted on like a real spy', () => {
+    objectToSpyOn.someMethod('someArg');
+
+    expect(objectToSpyOn.someMethod).toHaveBeenCalledWith('someArg')
+  });
+});
 
 describe('createAsyncMock', () => {
   describe('when mock is called once', () => {
