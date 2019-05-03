@@ -59,6 +59,37 @@ describe('spyOnAsync', () => {
 
     expect(objectToSpyOn.someMethod).toHaveBeenCalledWith('someArg')
   });
+
+  describe('when mock is called more than once', () => {
+    it('each resolve resolves the next promise', async () => {
+      let firstCallResult;
+      let firstCallError;
+
+      objectToSpyOn.someMethod()
+        .then(res => firstCallResult = res)
+        .catch(err => firstCallError = err);
+
+      let secondCallResult;
+      let secondCallError;
+
+      objectToSpyOn.someMethod()
+        .then(res => secondCallResult = res)
+        .catch(err => secondCallError = err);
+
+      expect(firstCallResult).toEqual(undefined);
+      expect(secondCallResult).toEqual(undefined);
+
+      await objectToSpyOn.someMethod.mock.resolve('an important part of a balanced breakfast');
+
+      expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+      expect(secondCallResult).toEqual(undefined);
+
+      await objectToSpyOn.someMethod.mock.resolve('good for your toes');
+
+      expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+      expect(secondCallResult).toEqual('good for your toes');
+    });
+  });
 });
 
 describe('createAsyncMock', () => {
@@ -115,49 +146,6 @@ describe('createAsyncMock', () => {
 
         expect(promiseFromMock).toEqual(promiseFromReject);
       });
-    });
-  });
-
-  xdescribe('when mock is called more than once', () => {
-    it('resolves all promises when resolve is called', async () => {
-      const {mock, resolve, reject} = createAsyncMock();
-
-      let firstResult;
-      let secondResult;
-
-      mock().then(val => {
-        firstResult = val
-      });
-
-      mock().then(val => {
-        secondResult = val
-      });
-
-      await resolve('an important part of a healthy breakfast');
-
-      expect(firstResult).toEqual('an important part of a healthy breakfast')
-      expect(secondResult).toEqual('an important part of a healthy breakfast')
-    });
-
-    it('can resolve individual promises', () => {
-      const {mock, resolve, reject} = createAsyncMock();
-
-      let firstResult;
-      let secondResult;
-
-      mock().then(val => {
-        firstResult = val
-      });
-
-      mock().then(val => {
-        secondResult = val
-      });
-
-      mock.promises[0].resolve('i am the first');
-      mock.promises[1].resolve('i tried to be first');
-
-      expect(firstResult).toEqual('i am the first');
-      expect(secondResult).toEqual('i tried to be first');
     });
   });
 });

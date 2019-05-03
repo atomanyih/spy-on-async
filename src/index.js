@@ -23,8 +23,20 @@ export const createAsyncMock = () => {
 };
 
 export const spyOnAsync = (module, methodName) => {
-  const {mock, resolve, reject} = createAsyncMock();
-  jest.spyOn(module, methodName).mockImplementation(mock);
-  module[methodName].mock.resolve = resolve;
-  module[methodName].mock.reject = reject;
+  let asyncMocks = [];
+  jest.spyOn(module, methodName).mockImplementation((...args) => {
+    const asyncMock = createAsyncMock();
+    asyncMocks = [asyncMock, ...asyncMocks];
+    return asyncMock.mock(...args)
+  });
+  module[methodName].mock.resolve = (val) => {
+    const asyncMock = asyncMocks.pop();
+
+    return asyncMock.resolve(val);
+  };
+  module[methodName].mock.reject = (err) => {
+    const asyncMock = asyncMocks.pop();
+
+    return asyncMock.reject(err);
+  };
 };
