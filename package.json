@@ -2,9 +2,11 @@
   "name": "spy-on-async",
   "version": "1.0.0",
   "description": "async testing helpers for jest",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "rollup -c"
   },
   "keywords": [
     "jest",
@@ -21,6 +23,10 @@
   "devDependencies": {
     "@babel/preset-env": "^7.4.4",
     "babel-jest": "^24.7.1",
-    "jest": "^24.7.1"
+    "jest": "^24.7.1",
+    "rollup": "^1.11.0"
+  },
+  "peerDependencies": {
+    "jest": "24.x"
   }
 }
