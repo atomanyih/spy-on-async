@@ -1,0 +1,24 @@
+{
+  "name": "spy-on-async",
+  "version": "1.0.0",
+  "description": "async testing helpers for jest",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "jest",
+    "spy",
+    "mock",
+    "double",
+    "test",
+    "testing",
+    "async",
+    "promises"
+  ],
+  "author": "August Toman-Yih",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^24.7.1"
+  }
+}
