@@ -18,7 +18,7 @@ export const createAsyncMock = () => {
       return promise.catch(() => {
       });
     },
-    mock: jest.fn().mockReturnValue(promise)
+    mock: () => promise
   };
 };
 
