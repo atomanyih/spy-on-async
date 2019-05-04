@@ -1,4 +1,71 @@
 import {createAsyncMock, spyOnAsync} from './index';
+import fakeAsyncFunction from './fakeAsyncFunction';
+import FakeAsyncModule from "./FakeAsyncModule";
+
+jest.mock('./fakeAsyncFunction', () => require('./index').createAsyncSpy());
+jest.mock('./FakeAsyncModule', () => ({
+  someAsyncAction: require('./index').createAsyncSpy()
+}));
+
+describe('createAsyncSpy', () => {
+  it('can be used with jest.mock()', async () => {
+    let firstCallResult;
+    let firstCallError;
+
+    fakeAsyncFunction()
+      .then(res => firstCallResult = res)
+      .catch(err => firstCallError = err);
+
+    let secondCallResult;
+    let secondCallError;
+
+    fakeAsyncFunction()
+      .then(res => secondCallResult = res)
+      .catch(err => secondCallError = err);
+
+    expect(firstCallResult).toEqual(undefined);
+    expect(secondCallResult).toEqual(undefined);
+
+    await fakeAsyncFunction.mock.resolve('an important part of a balanced breakfast');
+
+    expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+    expect(secondCallResult).toEqual(undefined);
+
+    await fakeAsyncFunction.mock.resolve('good for your toes');
+
+    expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+    expect(secondCallResult).toEqual('good for your toes');
+  });
+
+  it('can be used with jest.mock()', async () => {
+    let firstCallResult;
+    let firstCallError;
+
+    FakeAsyncModule.someAsyncAction()
+      .then(res => firstCallResult = res)
+      .catch(err => firstCallError = err);
+
+    let secondCallResult;
+    let secondCallError;
+
+    FakeAsyncModule.someAsyncAction()
+      .then(res => secondCallResult = res)
+      .catch(err => secondCallError = err);
+
+    expect(firstCallResult).toEqual(undefined);
+    expect(secondCallResult).toEqual(undefined);
+
+    await FakeAsyncModule.someAsyncAction.mock.resolve('an important part of a balanced breakfast');
+
+    expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+    expect(secondCallResult).toEqual(undefined);
+
+    await FakeAsyncModule.someAsyncAction.mock.resolve('good for your toes');
+
+    expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+    expect(secondCallResult).toEqual('good for your toes');
+  });
+});
 
 describe('spyOnAsync', () => {
   let underlyingImplementation;
