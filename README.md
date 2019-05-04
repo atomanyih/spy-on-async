@@ -13,13 +13,17 @@ Designed to be used with jest.
 ### spyOnAsync
 
 spy on a method  
-`spyOnAsync(object, methodName)`
+```js
+spyOnAsync(object, methodName)
+```
 
 
 ### createAsyncSpy
 
 create a spy  
-`const spy = createAsyncSpy()`
+```js
+const spy = createAsyncSpy()
+```
 
 
 ## TODO
