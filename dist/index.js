@@ -47,6 +47,18 @@ const multiple = (createAsyncMock) => () => {
   return {mock, resolve, reject}
 };
 
+const createAsyncSpy = () => {
+  const {mock, resolve, reject} = multiple(createAsyncMock)();
+
+  const fn = jest.fn();
+
+  fn.mockImplementation(mock);
+  fn.mock.resolve = resolve;
+  fn.mock.reject = reject;
+
+  return fn
+};
+
 const spyOnAsync = (module, methodName) => {
   const {mock, resolve, reject} = multiple(createAsyncMock)();
   jest.spyOn(module, methodName).mockImplementation(mock);
@@ -55,4 +67,5 @@ const spyOnAsync = (module, methodName) => {
 };
 
 exports.createAsyncMock = createAsyncMock;
+exports.createAsyncSpy = createAsyncSpy;
 exports.spyOnAsync = spyOnAsync;
