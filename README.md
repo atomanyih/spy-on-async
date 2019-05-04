@@ -12,11 +12,15 @@ Designed to be used with jest.
 
 ### spyOnAsync
 
-spy on a method
+spy on a method  
+`spyOnAsync(object, methodName)`
+
 
 ### createAsyncSpy
 
-create a spy
+create a spy  
+`const spy = createAsyncSpy()`
+
 
 ## TODO
 
