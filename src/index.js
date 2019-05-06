@@ -32,10 +32,16 @@ const multiple = (createAsyncMock) => () => {
   const resolve = (val) => {
     const asyncMock = asyncMocks.pop();
 
+    if(!asyncMock) {
+      throw new Error('No promises to resolve. Did you call the method?')
+    }
     return asyncMock.resolve(val);
   };
   const reject = (err) => {
     const asyncMock = asyncMocks.pop();
+    if(!asyncMock) {
+      throw new Error('No promises to reject. Did you call the method?')
+    }
 
     return asyncMock.reject(err);
   };

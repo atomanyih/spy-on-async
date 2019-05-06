@@ -157,6 +157,50 @@ describe('spyOnAsync', () => {
       expect(secondCallResult).toEqual('good for your toes');
     });
   });
+
+  describe('when promise is resolved before it is called', () => {
+    it('should error', async () => {
+      let firstCallResult;
+      let firstCallError;
+      let resolveError;
+
+      try {
+        await objectToSpyOn.someMethod.mock.resolve('an important part of a balanced breakfast');
+      } catch (e) {
+        resolveError = e;
+      }
+
+      objectToSpyOn.someMethod()
+        .then(res => firstCallResult = res)
+        .catch(err => firstCallError = err);
+
+      expect(firstCallError).toBeUndefined();
+      expect(firstCallResult).toBeUndefined();
+      expect(resolveError.message).toEqual('No promises to resolve. Did you call the method?')
+    });
+  });
+
+  describe('when promise is rejected before it is called', () => {
+    it('should error', async () => {
+      let firstCallResult;
+      let firstCallError;
+      let resolveError;
+
+      try {
+        await objectToSpyOn.someMethod.mock.reject('an important part of a balanced breakfast');
+      } catch (e) {
+        resolveError = e;
+      }
+
+      objectToSpyOn.someMethod()
+        .then(res => firstCallResult = res)
+        .catch(err => firstCallError = err);
+
+      expect(firstCallError).toBeUndefined();
+      expect(firstCallResult).toBeUndefined();
+      expect(resolveError.message).toEqual('No promises to reject. Did you call the method?')
+    });
+  });
 });
 
 describe('createAsyncMock', () => {
