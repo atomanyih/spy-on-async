@@ -158,47 +158,64 @@ describe('spyOnAsync', () => {
     });
   });
 
+  // if promise is resolved before called
+  // it resolves when called
+  // if you await it
+  // it resolves when called
+  // how to test this: async iterator? coroutine type thing?
+  // promise.all?
+
   describe('when promise is resolved before it is called', () => {
-    it('should error', async () => {
+    it('should resolve when called', async () => {
       let firstCallResult;
       let firstCallError;
-      let resolveError;
+      let secondCallResult;
+      let secondCallError;
 
-      try {
-        await objectToSpyOn.someMethod.mock.resolve('an important part of a balanced breakfast');
-      } catch (e) {
-        resolveError = e;
-      }
+      const methodUnderTest = async () => {
+        await objectToSpyOn.someMethod('call1')
+          .then(res => firstCallResult = res)
+          .catch(err => firstCallError = err);
 
-      objectToSpyOn.someMethod()
-        .then(res => firstCallResult = res)
-        .catch(err => firstCallError = err);
+        await objectToSpyOn.someMethod('call2')
+          .then(res => secondCallResult = res)
+          .catch(err => secondCallError = err);
+      };
+
+      const promise = (async () => {
+        await objectToSpyOn.someMethod.mock.resolve('an important part of a balanced breakfast')
+        expect(objectToSpyOn.someMethod).toHaveBeenCalledWith('call1');
+
+        await objectToSpyOn.someMethod.mock.resolve('WHAT IS THIS');
+        expect(objectToSpyOn.someMethod).toHaveBeenCalledWith('call2');
+      })();
+
+      methodUnderTest();
+      await promise;
 
       expect(firstCallError).toBeUndefined();
-      expect(firstCallResult).toBeUndefined();
-      expect(resolveError.message).toEqual('No promises to resolve. Did you call the method?')
+      expect(firstCallResult).toEqual('an important part of a balanced breakfast');
     });
   });
 
   describe('when promise is rejected before it is called', () => {
-    it('should error', async () => {
+    it('should reject when called', async () => {
       let firstCallResult;
       let firstCallError;
-      let resolveError;
 
-      try {
-        await objectToSpyOn.someMethod.mock.reject('an important part of a balanced breakfast');
-      } catch (e) {
-        resolveError = e;
-      }
+      const resolvePromise = objectToSpyOn.someMethod.mock.reject('an important part of a balanced breakfast');
 
-      objectToSpyOn.someMethod()
+      const callPromise = objectToSpyOn.someMethod()
         .then(res => firstCallResult = res)
         .catch(err => firstCallError = err);
 
-      expect(firstCallError).toBeUndefined();
+      await Promise.all([
+        resolvePromise,
+        callPromise
+      ]);
+
+      expect(firstCallError).toEqual('an important part of a balanced breakfast');
       expect(firstCallResult).toBeUndefined();
-      expect(resolveError.message).toEqual('No promises to reject. Did you call the method?')
     });
   });
 });

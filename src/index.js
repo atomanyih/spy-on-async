@@ -24,25 +24,54 @@ export const createAsyncMock = () => {
 
 const multiple = (createAsyncMock) => () => {
   let asyncMocks = [];
+  let results = [];
   const mock = (...args) => {
     const asyncMock = createAsyncMock();
-    asyncMocks = [asyncMock, ...asyncMocks];
+    const result = results.pop();
+    if(!result) {
+      asyncMocks.unshift(asyncMock);
+    } else {
+      result(asyncMock)
+    }
+
     return asyncMock.mock(...args)
   };
   const resolve = (val) => {
     const asyncMock = asyncMocks.pop();
 
     if(!asyncMock) {
-      throw new Error('No promises to resolve. Did you call the method?')
+      let resolve;
+
+      const promise = new Promise(res => {
+        resolve = res
+      });
+
+      const result = mock => {
+        resolve();
+        return mock.resolve(val)
+      };
+      results.unshift(result);
+      return promise
     }
     return asyncMock.resolve(val);
   };
   const reject = (err) => {
     const asyncMock = asyncMocks.pop();
-    if(!asyncMock) {
-      throw new Error('No promises to reject. Did you call the method?')
-    }
 
+    if(!asyncMock) {
+      let resolve;
+
+      const promise = new Promise(res => {
+        resolve = res
+      });
+
+      const result = mock => {
+        resolve();
+        return mock.reject(err)
+      };
+      results.unshift(result);
+      return promise
+    }
     return asyncMock.reject(err);
   };
 
