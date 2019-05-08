@@ -1,10 +1,10 @@
-import {createAsyncMock, spyOnAsync} from './index';
+import {createAsyncMock, spyOnAsync} from '../src/index';
 import fakeAsyncFunction from './fakeAsyncFunction';
 import FakeAsyncModule from "./FakeAsyncModule";
 
-jest.mock('./fakeAsyncFunction', () => require('./index').createAsyncSpy());
+jest.mock('./fakeAsyncFunction', () => require('../src/index').createAsyncSpy());
 jest.mock('./FakeAsyncModule', () => ({
-  someAsyncAction: require('./index').createAsyncSpy()
+  someAsyncAction: require('../src/index').createAsyncSpy()
 }));
 
 describe('createAsyncSpy', () => {
