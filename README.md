@@ -50,3 +50,44 @@ describe('methodUnderTest', () => {
   });
 });
 ```
+
+#### testing branching possibilities
+```js
+// __tests__/methodUnderTest.test.js
+import methodUnderTest from '../src/methodUnderTest';
+import ModuleWithAsyncStuff from '../src/ModuleWithAsyncStuff'; 
+
+describe('methodUnderTest', () => {
+  let promise;
+
+  beforeEach(() => {
+    spyOnAsync(ModuleWithAsyncStuff, 'method1');
+    spyOnAsync(ModuleWithAsyncStuff, 'method2');
+    
+    promise = methodUnderTest('arg1');
+  });
+
+  it('calls some method1', async () => {
+    expect(ModuleWithAsyncStuff.method1).toHaveBeenCalledWith('arg1');
+  });
+  
+  describe('when method1 resolves', () => {
+    beforeEach(() => {    
+      await ModuleWithAsyncStuff.method1.mock.resolve('result1'); 
+    });
+  
+    it('calls method2 with result', async () => {
+      expect(ModuleWithAsyncStuff.method2).toHaveBeenCalledWith('result1');
+    });
+  });
+  
+  describe('when method1 rejects', async () => {
+    beforeEach(() => {
+      await ModuleWithAsyncStuff.method1.mock.reject('nooo');
+    });
+    
+    it('does something', () => {});
+  });
+});
+```
+
