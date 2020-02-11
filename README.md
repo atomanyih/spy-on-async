@@ -3,7 +3,7 @@
 ## Installation
 
 ```bash
-npm install --save spy-on-async
+npm install --save-dev spy-on-async
 ```
 
 ## Usage
