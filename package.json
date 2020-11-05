@@ -28,5 +28,6 @@
   },
   "peerDependencies": {
     "jest": "24.x"
-  }
+  },
+  "repository": "https://github.com/atomanyih/spy-on-async"
 }
