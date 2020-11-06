@@ -146,8 +146,8 @@ describe('AsyncMocker', () => {
   });
 
   describe('#spyOnAsync', () => {
-    let underlyingImplementation;
-    let objectToSpyOn;
+    let underlyingImplementation : jest.Mock;
+    let objectToSpyOn : { someMethod: (val: string) => Promise<any>};
 
     beforeEach(() => {
       underlyingImplementation = jest.fn();
@@ -159,7 +159,7 @@ describe('AsyncMocker', () => {
     });
 
     it('does not call the underlying implementation', () => {
-      objectToSpyOn.someMethod();
+      objectToSpyOn.someMethod('val');
 
       expect(underlyingImplementation).not.toHaveBeenCalled();
     });
@@ -168,14 +168,14 @@ describe('AsyncMocker', () => {
       let result;
       let error;
 
-      objectToSpyOn.someMethod()
+      objectToSpyOn.someMethod('val')
         .then(res => result = res)
         .catch(err => error = err);
 
       expect(result).toBeUndefined();
       expect(error).toBeUndefined();
 
-      await objectToSpyOn.someMethod.mockResolveNext('result');
+      await (objectToSpyOn.someMethod as AsyncMock<any>).mockResolveNext('result');
 
       expect(result).toEqual('result');
       expect(error).toEqual(undefined);
@@ -185,14 +185,14 @@ describe('AsyncMocker', () => {
       let result;
       let error;
 
-      objectToSpyOn.someMethod()
+      objectToSpyOn.someMethod('val')
         .then(res => result = res)
         .catch(err => error = err);
 
       expect(result).toBeUndefined();
       expect(error).toBeUndefined();
 
-      await objectToSpyOn.someMethod.mockRejectNext('error');
+      await (objectToSpyOn.someMethod as AsyncMock<any>).mockRejectNext('error');
 
       expect(result).toEqual(undefined);
       expect(error).toEqual('error');
@@ -210,26 +210,26 @@ describe('AsyncMocker', () => {
         let firstCallResult;
         let firstCallError;
 
-        objectToSpyOn.someMethod()
+        objectToSpyOn.someMethod('val')
           .then(res => firstCallResult = res)
           .catch(err => firstCallError = err);
 
         let secondCallResult;
         let secondCallError;
 
-        objectToSpyOn.someMethod()
+        objectToSpyOn.someMethod('val')
           .then(res => secondCallResult = res)
           .catch(err => secondCallError = err);
 
         expect(firstCallResult).toEqual(undefined);
         expect(secondCallResult).toEqual(undefined);
 
-        await objectToSpyOn.someMethod.mockResolveNext('an important part of a balanced breakfast');
+        await (objectToSpyOn.someMethod as AsyncMock<any>).mockResolveNext('an important part of a balanced breakfast');
 
         expect(firstCallResult).toEqual('an important part of a balanced breakfast');
         expect(secondCallResult).toEqual(undefined);
 
-        await objectToSpyOn.someMethod.mockResolveNext('good for your toes');
+        await (objectToSpyOn.someMethod as AsyncMock<any>).mockResolveNext('good for your toes');
 
         expect(firstCallResult).toEqual('an important part of a balanced breakfast');
         expect(secondCallResult).toEqual('good for your toes');

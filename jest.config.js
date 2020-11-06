@@ -1,20 +1,15 @@
 module.exports = {
+  preset: 'ts-jest',
   restoreMocks: true,
-  "transform": {
-    "^.+\\.ts$": "ts-jest"
-  },
   "testMatch": [
     "**/__tests__/**/*.ts?(x)",
     "**/?(*.)+(spec|test).ts?(x)"
   ],
-  "moduleFileExtensions": [
-    "js",
-    "ts",
-    "tsx"
-  ],
-  // "globals": {
-  //   "ts-jest": {
-  //     "tsconfig": "tsconfig.jest.json"
-  //   }
-  // },
+  globals: {
+    'ts-jest': {
+      tsconfig: {
+        noImplicitAny: true
+      }
+    }
+  }
 };

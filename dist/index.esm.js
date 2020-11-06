@@ -75,6 +75,8 @@ var AsyncMocker = /** @class */ (function () {
             fn.mockImplementation(call);
             return fn;
         };
+        // TODO: how to type `module`?
+        // typings in jest look cray
         this.spyOnAsync = function (module, methodName) {
             var _a = multipleCalls(createMockCall)(), call = _a.call, resolve = _a.resolve, reject = _a.reject, reset = _a.reset;
             _this._resetRegistry.add(reset);

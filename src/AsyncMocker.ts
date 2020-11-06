@@ -118,8 +118,10 @@ class AsyncMocker {
     return fn;
   }
 
-  spyOnAsync = <T>(module, methodName): AsyncSpy<T> => {
-    const {call, resolve, reject, reset} = multipleCalls<T>(createMockCall)()
+  // TODO: how to type `module`?
+  // typings in jest look cray
+  spyOnAsync = <ReturnType>(module: any, methodName: string): AsyncSpy<ReturnType> => {
+    const {call, resolve, reject, reset} = multipleCalls<ReturnType>(createMockCall)()
 
     this._resetRegistry.add(reset)
 
