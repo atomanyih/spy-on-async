@@ -10,6 +10,19 @@ npm install --save-dev spy-on-async
 
 Designed to be used with jest.
 
+### jest configuration
+
+```
+{
+    "restoreMocks": true,
+    "resetMocks": false, 
+    "clearMocks": false,
+}
+```
+`resetMocks` and `clearMocks` should be disabled by default.
+ If they are enabled, this will remove the implementation from module mocks and make you sad.
+
+
 ### spying on a method
 
 ```js
@@ -72,7 +85,7 @@ describe('makeBananaBread', () => {
   });
   
   describe('when store has bananas', () => {
-    beforeEach(() => {    
+    beforeEach(async () => {    
       await ModuleWithAsyncStuff.goBuyBananas.mock.resolve('bananas'); 
     });
   
@@ -82,11 +95,13 @@ describe('makeBananaBread', () => {
   });
   
   describe('when store is out of bananas', async () => {
-    beforeEach(() => {
+    beforeEach(async () => {
       await ModuleWithAsyncStuff.goBuyBananas.mock.reject('no bananas');
     });
     
-    it('does something', () => {});
+    it('does not bake them bananas', () => {
+      expect(ModuleWithAsyncStuff.bakeBananaBread).not.toHaveBeenCalled();
+    });
   });
 });
 ```
