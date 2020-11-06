@@ -2,105 +2,91 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-const createAsyncMock = () => {
-  let resolvePromise, rejectPromise;
-
-  const promise = new Promise((resolve, reject) => {
-    resolvePromise = resolve;
-    rejectPromise = reject;
-  });
-
-  return {
-    resolve(val) {
-      resolvePromise(val);
-
-      return promise;
-    },
-    reject(val) {
-      rejectPromise(val);
-
-      return promise.catch(() => {
-      });
-    },
-    mock: () => promise
-  };
-};
-
-const multiple = (createAsyncMock) => () => {
-  let asyncMocks = [];
-  let results = [];
-  const mock = (...args) => {
-    const asyncMock = createAsyncMock();
-    const result = results.pop();
-    if(!result) {
-      asyncMocks.unshift(asyncMock);
-    } else {
-      result(asyncMock);
+var createMockCall = function () {
+    var resolvePromise;
+    var rejectPromise;
+    var promise;
+    function resetPromise() {
+        promise = new Promise(function (resolve, reject) {
+            resolvePromise = resolve;
+            rejectPromise = reject;
+        });
     }
-
-    return asyncMock.mock(...args)
-  };
-  const resolve = (val) => {
-    const asyncMock = asyncMocks.pop();
-
-    if(!asyncMock) {
-      let resolve;
-
-      const promise = new Promise(res => {
-        resolve = res;
-      });
-
-      const result = mock => {
-        resolve();
-        return mock.resolve(val)
-      };
-      results.unshift(result);
-      return promise
+    resetPromise();
+    return {
+        resolve: function (val) {
+            resolvePromise(val);
+            return promise;
+        },
+        reject: function (val) {
+            rejectPromise(val);
+            return promise["catch"](function () { return val; });
+        },
+        call: function () { return promise; },
+        reset: resetPromise
+    };
+};
+var multipleCalls = function (createMockImplementation) { return function () {
+    var calls = [];
+    return {
+        resolve: function (val) {
+            var call = calls.pop();
+            if (!call) {
+                throw 'No calls yo';
+            }
+            return call.resolve(val);
+        },
+        reject: function (val) {
+            var call = calls.pop();
+            if (!call) {
+                throw 'No calls yo';
+            }
+            return call.reject(val);
+        },
+        call: function () {
+            var call = createMockImplementation();
+            calls.unshift(call);
+            return call.call();
+        },
+        reset: function () {
+            calls = [];
+        }
+    };
+}; };
+var AsyncMocker = /** @class */ (function () {
+    function AsyncMocker() {
+        var _this = this;
+        this.resetAllPromises = function () {
+            _this._resetRegistry.forEach(function (reset) { return reset(); });
+        };
+        this.createAsyncMock = function () {
+            var _a = multipleCalls(createMockCall)(), call = _a.call, resolve = _a.resolve, reject = _a.reject, reset = _a.reset;
+            _this._resetRegistry.add(reset);
+            var fn = Object.assign(jest.fn(), {
+                mockResolveNext: resolve,
+                mockRejectNext: reject
+            });
+            fn.mockImplementation(call);
+            return fn;
+        };
+        this.createAsyncMockSingleton = function () {
+            var _a = createMockCall(), call = _a.call, resolve = _a.resolve, reject = _a.reject, reset = _a.reset;
+            _this._resetRegistry.add(reset);
+            var fn = Object.assign(jest.fn(), {
+                mockResolveNext: resolve,
+                mockRejectNext: reject
+            });
+            fn.mockImplementation(call);
+            return fn;
+        };
+        this._resetRegistry = new Set();
     }
-    return asyncMock.resolve(val);
-  };
-  const reject = (err) => {
-    const asyncMock = asyncMocks.pop();
+    return AsyncMocker;
+}());
+var mocker = new AsyncMocker();
 
-    if(!asyncMock) {
-      let resolve;
-
-      const promise = new Promise(res => {
-        resolve = res;
-      });
-
-      const result = mock => {
-        resolve();
-        return mock.reject(err)
-      };
-      results.unshift(result);
-      return promise
-    }
-    return asyncMock.reject(err);
-  };
-
-  return {mock, resolve, reject}
-};
-
-const createAsyncSpy = () => {
-  const {mock, resolve, reject} = multiple(createAsyncMock)();
-
-  const fn = jest.fn();
-
-  fn.mockImplementation(mock);
-  fn.mock.resolve = resolve;
-  fn.mock.reject = reject;
-
-  return fn
-};
-
-const spyOnAsync = (module, methodName) => {
-  const {mock, resolve, reject} = multiple(createAsyncMock)();
-  jest.spyOn(module, methodName).mockImplementation(mock);
-  module[methodName].mock.resolve = resolve;
-  module[methodName].mock.reject = reject;
-};
+var createAsyncMock = mocker.createAsyncMock;
+var resetAllPromises = mocker.resetAllPromises;
 
 exports.createAsyncMock = createAsyncMock;
-exports.createAsyncSpy = createAsyncSpy;
-exports.spyOnAsync = spyOnAsync;
+exports.resetAllPromises = resetAllPromises;
