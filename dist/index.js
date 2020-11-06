@@ -79,6 +79,15 @@ var AsyncMocker = /** @class */ (function () {
             fn.mockImplementation(call);
             return fn;
         };
+        this.spyOnAsync = function (module, methodName) {
+            var _a = multipleCalls(createMockCall)(), call = _a.call, resolve = _a.resolve, reject = _a.reject, reset = _a.reset;
+            _this._resetRegistry.add(reset);
+            var fn = jest.spyOn(module, methodName).mockImplementation(call);
+            return Object.assign(fn, {
+                mockResolveNext: resolve,
+                mockRejectNext: reject
+            });
+        };
         this._resetRegistry = new Set();
     }
     return AsyncMocker;

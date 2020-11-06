@@ -3,6 +3,11 @@ export interface AsyncMock<T> extends jest.Mock<Promise<T>> {
   mockRejectNext(val?: T): Promise<any>;
 }
 
+export interface AsyncSpy<T> extends jest.SpyInstance<Promise<T>> {
+  mockResolveNext(val: T): Promise<T>;
+  mockRejectNext(val?: T): Promise<any>;
+}
+
 type AsyncMockCall<T> = {
   resolve(val?: T) : Promise<T>;
   reject(val?: any): Promise<any>;
@@ -111,6 +116,19 @@ class AsyncMocker {
     fn.mockImplementation(call)
 
     return fn;
+  }
+
+  spyOnAsync = <T>(module, methodName): AsyncSpy<T> => {
+    const {call, resolve, reject, reset} = multipleCalls<T>(createMockCall)()
+
+    this._resetRegistry.add(reset)
+
+    const fn = jest.spyOn(module, methodName).mockImplementation(call)
+
+    return Object.assign(fn, {
+      mockResolveNext: resolve,
+      mockRejectNext: reject
+    });
   }
 }
 

@@ -1,49 +1,13 @@
 import asyncMocker, {AsyncMock} from "../src/AsyncMocker";
 
-const {createAsyncMock, resetAllPromises} = asyncMocker;
+const {createAsyncMock, resetAllPromises, spyOnAsync} = asyncMocker;
 
-describe('spyOnAsync', () => {
-  describe('createAsyncMock', () => {
+describe('AsyncMocker', () => {
+  describe('#createAsyncMock', () => {
     let asyncMock : AsyncMock<string>;
 
     beforeEach(() => {
       asyncMock = createAsyncMock<string>()
-    });
-
-    it('returns a promise when called', () => {
-      const promise = asyncMock();
-      expect(promise.then).toBeTruthy();
-      expect(promise.catch).toBeTruthy();
-    });
-
-    describe('when #mockResolveNext is called', () => {
-      it('resolves the promise', async () => {
-        let val : string;
-        asyncMock().then(value => {
-          val = value
-        });
-
-        const resolvedValue = 'it woiks';
-        await asyncMock.mockResolveNext(resolvedValue)
-
-        // @ts-ignore
-        expect(val).toEqual(resolvedValue);
-      });
-    });
-
-    describe('when #mockRejectNext is rejected', () => {
-      it('rejects the promise', async () => {
-        let val : string;
-        asyncMock().catch(value => {
-          val = value
-        });
-
-        const rejectedValue = 'it woiks';
-        await asyncMock.mockRejectNext(rejectedValue)
-
-        // @ts-ignore
-        expect(val).toEqual(rejectedValue);
-      });
     });
 
     describe('when mock is called multiple times', () => {
@@ -177,6 +141,98 @@ describe('spyOnAsync', () => {
         expect(val2).toEqual(resolvedValue);
         // @ts-ignore
         expect(val1).toBeUndefined();
+      });
+    });
+  });
+
+  describe('#spyOnAsync', () => {
+    let underlyingImplementation;
+    let objectToSpyOn;
+
+    beforeEach(() => {
+      underlyingImplementation = jest.fn();
+      objectToSpyOn = {
+        someMethod: (...args) => underlyingImplementation(...args)
+      };
+
+      spyOnAsync(objectToSpyOn, 'someMethod');
+    });
+
+    it('does not call the underlying implementation', () => {
+      objectToSpyOn.someMethod();
+
+      expect(underlyingImplementation).not.toHaveBeenCalled();
+    });
+
+    it('returns a promise that can be resolved through the method', async () => {
+      let result;
+      let error;
+
+      objectToSpyOn.someMethod()
+        .then(res => result = res)
+        .catch(err => error = err);
+
+      expect(result).toBeUndefined();
+      expect(error).toBeUndefined();
+
+      await objectToSpyOn.someMethod.mockResolveNext('result');
+
+      expect(result).toEqual('result');
+      expect(error).toEqual(undefined);
+    });
+
+    it('returns a promise that can be rejected through the method', async () => {
+      let result;
+      let error;
+
+      objectToSpyOn.someMethod()
+        .then(res => result = res)
+        .catch(err => error = err);
+
+      expect(result).toBeUndefined();
+      expect(error).toBeUndefined();
+
+      await objectToSpyOn.someMethod.mockRejectNext('error');
+
+      expect(result).toEqual(undefined);
+      expect(error).toEqual('error');
+
+    });
+
+    it('can be asserted on like a real spy', () => {
+      objectToSpyOn.someMethod('someArg');
+
+      expect(objectToSpyOn.someMethod).toHaveBeenCalledWith('someArg')
+    });
+
+    describe('when mock is called more than once', () => {
+      it('each resolve resolves the next promise', async () => {
+        let firstCallResult;
+        let firstCallError;
+
+        objectToSpyOn.someMethod()
+          .then(res => firstCallResult = res)
+          .catch(err => firstCallError = err);
+
+        let secondCallResult;
+        let secondCallError;
+
+        objectToSpyOn.someMethod()
+          .then(res => secondCallResult = res)
+          .catch(err => secondCallError = err);
+
+        expect(firstCallResult).toEqual(undefined);
+        expect(secondCallResult).toEqual(undefined);
+
+        await objectToSpyOn.someMethod.mockResolveNext('an important part of a balanced breakfast');
+
+        expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+        expect(secondCallResult).toEqual(undefined);
+
+        await objectToSpyOn.someMethod.mockResolveNext('good for your toes');
+
+        expect(firstCallResult).toEqual('an important part of a balanced breakfast');
+        expect(secondCallResult).toEqual('good for your toes');
       });
     });
   });
