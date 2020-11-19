@@ -93,6 +93,7 @@ var AsyncMocker = /** @class */ (function () {
 var mocker = new AsyncMocker();
 
 var createAsyncMock = mocker.createAsyncMock;
+var spyOnAsync = mocker.spyOnAsync;
 var resetAllPromises = mocker.resetAllPromises;
 
-export { createAsyncMock, resetAllPromises };
+export { createAsyncMock, resetAllPromises, spyOnAsync };

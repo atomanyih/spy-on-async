@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
-    "noImplicitAny": true
-  }
+    "noImplicitAny": true,
+    "declaration": true
+  },
+  "include": [
+    "src/**/*"
+  ]
 }

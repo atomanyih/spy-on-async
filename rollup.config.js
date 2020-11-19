@@ -1,5 +1,5 @@
 import Package from './package.json'
-import typescript from '@rollup/plugin-typescript';
+import typescript from 'rollup-plugin-typescript2';
 
 export default [
   {
