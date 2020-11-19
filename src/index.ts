@@ -1,5 +1,5 @@
-import mocker, {AsyncMock} from './AsyncMocker';
+import mocker from './AsyncMocker';
 
-export {AsyncMock};
 export const createAsyncMock = mocker.createAsyncMock
+export const spyOnAsync = mocker.spyOnAsync
 export const resetAllPromises = mocker.resetAllPromises
