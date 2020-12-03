@@ -1,11 +1,12 @@
-import { spyOnAsync } from "../src";
+import {AsyncMock, AsyncSpy, spyOnAsync} from "../src";
+import ArgsType = jest.ArgsType;
 
 const SomeGuy = {
-  goBuyBananas: () => Promise.reject("don't call me"),
-  bakeBananaBread: () => Promise.reject("don't call me")
+  goBuyBananas: (_: any, __:any) => Promise.reject("don't call me"),
+  bakeBananaBread: (_: any) => Promise.reject("don't call me")
 };
 
-const makeBananaBread = async (numBananas) => {
+const makeBananaBread = async (numBananas: any) => {
   let bananas;
   try {
     bananas = await SomeGuy.goBuyBananas('bananaTown', numBananas);
@@ -16,13 +17,15 @@ const makeBananaBread = async (numBananas) => {
 };
 
 describe('makeBananaBread', () => {
-  let promise;
+  let promise : Promise<string>;
+  let goBuyBananasSpy : AsyncSpy<string[]>;
+  let bakeBananaBreadSpy : AsyncSpy<string[]>;
 
   beforeEach(() => {
-    spyOnAsync(SomeGuy, 'goBuyBananas');
-    spyOnAsync(SomeGuy, 'bakeBananaBread');
+    goBuyBananasSpy = spyOnAsync(SomeGuy, 'goBuyBananas');
+    bakeBananaBreadSpy = spyOnAsync(SomeGuy, 'bakeBananaBread');
 
-    promise = makeBananaBread(2).catch(() => {});
+    promise = makeBananaBread(2);
   });
 
   it('goes to bananaTown for bananas', async () => {
@@ -31,7 +34,12 @@ describe('makeBananaBread', () => {
 
   describe('if bananaTown has bananas', () => {
     beforeEach(async () => {
-      await SomeGuy.goBuyBananas.mock.resolve(['banana', 'banana']);
+      await goBuyBananasSpy.mockResolveNext(['banana', 'banana']);
+
+      // // alternately, you can cast to an AsyncMock:
+      // // if anyone can explain why I need to cast as jest.Mock before casting to AsyncMock, I will give you a hug
+      // await ((SomeGuy.goBuyBananas as jest.Mock) as AsyncMock).mockResolveNext(['banana', 'banana'])
+
     });
 
     it('bakes those bananas', async () => {
@@ -41,7 +49,7 @@ describe('makeBananaBread', () => {
 
   describe('if bananaTown is out of bananas', () => {
     beforeEach(async () => {
-      await SomeGuy.goBuyBananas.mock.reject('no bananas');
+      await goBuyBananasSpy.mockRejectNext('no bananas');
     });
 
     it('goes to bananapolis ', () => {
@@ -50,7 +58,7 @@ describe('makeBananaBread', () => {
 
     describe('if bananapolis has bananas', () => {
       beforeEach(async () => {
-        await SomeGuy.goBuyBananas.mock.resolve(['banana', 'banana']);
+        await goBuyBananasSpy.mockResolveNext(['banana', 'banana']);
       });
 
       it('bakes those bananas', async () => {
@@ -60,11 +68,11 @@ describe('makeBananaBread', () => {
 
     describe('if bananapolis is out of bananas', () => {
       beforeEach(async () => {
-        await SomeGuy.goBuyBananas.mock.reject('no bananas');
+        await goBuyBananasSpy.mockRejectNext('no bananas');
       });
 
-      it('is sad', () => {
-
+      it('is sad', async () => {
+        await expect(promise).rejects.toMatch('no bananas')
       });
     });
   });
