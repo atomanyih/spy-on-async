@@ -1,27 +1,27 @@
-export interface AsyncMock<T> extends jest.Mock<Promise<T>> {
-  mockResolveNext(val: T): Promise<T>;
-  mockRejectNext(val?: T): Promise<any>;
+export interface AsyncMock<ResolveType = any, ArgsType extends any[] = any> extends Function, jest.Mock<Promise<ResolveType>, ArgsType> {
+  mockResolveNext(val: ResolveType): Promise<ResolveType>;
+  mockRejectNext(val?: any): Promise<any>;
 }
 
-export interface AsyncSpy<T> extends jest.SpyInstance<Promise<T>> {
-  mockResolveNext(val: T): Promise<T>;
-  mockRejectNext(val?: T): Promise<any>;
+export interface AsyncSpy<ResolveType, ArgsType extends any[] = any> extends jest.SpyInstance<Promise<ResolveType>, ArgsType> {
+  mockResolveNext(val: ResolveType): Promise<ResolveType>;
+  mockRejectNext(val?: any): Promise<any>;
 }
 
-type AsyncMockCall<T> = {
-  resolve(val?: T) : Promise<T>;
+type AsyncMockCall<ResolveType> = {
+  resolve(val?: ResolveType) : Promise<ResolveType>;
   reject(val?: any): Promise<any>;
-  call(): Promise<T>; // call
+  call(): Promise<ResolveType>; // call
   reset(): void; // reset
 }
 
-const createMockCall = <T>() : AsyncMockCall<T> => {
-  let resolvePromise: (value?: T | PromiseLike<T>) => void;
+const createMockCall = <ResolveType>() : AsyncMockCall<ResolveType> => {
+  let resolvePromise: (value?: ResolveType | PromiseLike<ResolveType>) => void;
   let rejectPromise: (reason?: any) => void;
-  let promise : Promise<T>;
+  let promise : Promise<ResolveType>;
 
   function resetPromise() {
-    promise = new Promise<T>((resolve, reject) => {
+    promise = new Promise<ResolveType>((resolve, reject) => {
       resolvePromise = resolve;
       rejectPromise = reject;
     });
@@ -30,7 +30,7 @@ const createMockCall = <T>() : AsyncMockCall<T> => {
   resetPromise();
 
   return {
-    resolve(val?: T) {
+    resolve(val?: ResolveType) {
       resolvePromise(val);
 
       return promise;
@@ -45,11 +45,11 @@ const createMockCall = <T>() : AsyncMockCall<T> => {
   };
 };
 
-const multipleCalls = <T>(createMockImplementation: <T>() => AsyncMockCall<T>) => () : AsyncMockCall<T> => {
-  let calls : AsyncMockCall<T>[] = []
+const multipleCalls = <ResolveType>(createMockImplementation: <T>() => AsyncMockCall<T>) => () : AsyncMockCall<ResolveType> => {
+  let calls : AsyncMockCall<ResolveType>[] = []
 
   return {
-    resolve(val?: T) {
+    resolve(val?: ResolveType) {
       const call = calls.pop();
       if(!call) {
         throw 'No calls yo'
@@ -66,7 +66,7 @@ const multipleCalls = <T>(createMockImplementation: <T>() => AsyncMockCall<T>) =
       return call.reject(val);
     },
     call: () => {
-      const call = createMockImplementation<T>();
+      const call = createMockImplementation<ResolveType>();
       calls.unshift(call)
 
       return call.call()
@@ -88,8 +88,8 @@ class AsyncMocker {
     this._resetRegistry.forEach(reset => reset());
   }
 
-  createAsyncMock = <T>(): AsyncMock<T> => {
-    const {call, resolve, reject, reset} = multipleCalls<T>(createMockCall)()
+  createAsyncMock = <ResolveType>(): AsyncMock<ResolveType> => {
+    const {call, resolve, reject, reset} = multipleCalls<ResolveType>(createMockCall)()
 
     this._resetRegistry.add(reset)
 
@@ -103,8 +103,8 @@ class AsyncMocker {
     return fn;
   }
 
-  createAsyncMockSingleton = <T>(): AsyncMock<T> => {
-    const {call, resolve, reject, reset} = createMockCall<T>()
+  createAsyncMockSingleton = <ResolveType>(): AsyncMock<ResolveType> => {
+    const {call, resolve, reject, reset} = createMockCall<ResolveType>()
 
     this._resetRegistry.add(reset)
 
@@ -120,8 +120,8 @@ class AsyncMocker {
 
   // TODO: how to type `module`?
   // typings in jest look cray
-  spyOnAsync = <ReturnType>(module: any, methodName: string): AsyncSpy<ReturnType> => {
-    const {call, resolve, reject, reset} = multipleCalls<ReturnType>(createMockCall)()
+  spyOnAsync = <ResolveType>(module: any, methodName: string): AsyncSpy<ResolveType> => {
+    const {call, resolve, reject, reset} = multipleCalls<ResolveType>(createMockCall)()
 
     this._resetRegistry.add(reset)
 
