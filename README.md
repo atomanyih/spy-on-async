@@ -111,3 +111,12 @@ describe('makeBananaBread', () => {
 });
 ```
 
+### Mocking a module
+
+`createAsyncMock` can be used in jest manual mocks
+
+```ts
+import {createAsyncMock} from "spy-on-async";
+
+export const someMethod = createAsyncMock<ResolveType>();
+```
