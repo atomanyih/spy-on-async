@@ -1,25 +1,24 @@
-import {AsyncMock, AsyncSpy, spyOnAsync} from "../src";
-import ArgsType = jest.ArgsType;
-
-const SomeGuy = {
-  goBuyBananas: (_: any, __:any) => Promise.reject("don't call me"),
-  bakeBananaBread: (_: any) => Promise.reject("don't call me")
-};
-
-const makeBananaBread = async (numBananas: any) => {
-  let bananas;
-  try {
-    bananas = await SomeGuy.goBuyBananas('bananaTown', numBananas);
-  } catch(e) {
-    bananas = await SomeGuy.goBuyBananas('bananapolis', numBananas);
-  }
-  return SomeGuy.bakeBananaBread(bananas);
-};
+import {AsyncSpy, spyOnAsync} from "../src";
 
 describe('makeBananaBread', () => {
-  let promise : Promise<string>;
-  let goBuyBananasSpy : AsyncSpy<string[]>;
-  let bakeBananaBreadSpy : AsyncSpy<string[]>;
+  const SomeGuy = {
+    goBuyBananas: (location: string, numBananas: number) => Promise.reject("don't call me"),
+    bakeBananaBread: (numBananas: number) => Promise.reject("don't call me")
+  };
+
+  const makeBananaBread = async (numBananas: number) => {
+    let bananas;
+    try {
+      bananas = await SomeGuy.goBuyBananas('bananaTown', numBananas);
+    } catch (e) {
+      bananas = await SomeGuy.goBuyBananas('bananapolis', numBananas);
+    }
+    return SomeGuy.bakeBananaBread(bananas);
+  };
+
+  let promise: Promise<string>;
+  let goBuyBananasSpy: AsyncSpy<string[]>;
+  let bakeBananaBreadSpy: AsyncSpy<string[]>;
 
   beforeEach(() => {
     goBuyBananasSpy = spyOnAsync(SomeGuy, 'goBuyBananas');
@@ -73,6 +72,82 @@ describe('makeBananaBread', () => {
 
       it('is sad', async () => {
         await expect(promise).rejects.toMatch('no bananas')
+      });
+    });
+  });
+});
+
+describe('simpler example', () => {
+  type Banana = string;
+  type BananaBread = string;
+
+  const BananaMan = {
+    goBuyBananas: (numBananas: number): Promise<Banana[]> => Promise.reject('broken'),
+    bakeBananaBread: (bananas: Banana[]): Promise<BananaBread> => Promise.reject('broken'),
+  }
+
+  const makeBananaBread = async (numBananas: number) => {
+    const bananas = await BananaMan.goBuyBananas(numBananas);
+
+    return BananaMan.bakeBananaBread(bananas);
+  };
+
+  describe('makeBananaBread', () => {
+    it('calls some methods', async () => {
+      const goBuyBananasSpy = spyOnAsync(BananaMan, 'goBuyBananas');
+      const bakeBananaBreadSpy = spyOnAsync(BananaMan, 'bakeBananaBread');
+
+      spyOnAsync(BananaMan, 'bakeBananaBread');
+
+      const promise = makeBananaBread(2);
+
+      expect(BananaMan.goBuyBananas).toHaveBeenCalledWith(2);
+
+      await goBuyBananasSpy.mockResolveNext('bananas');
+      // awaiting ensures the method continues execution before we do our next assertion
+
+      expect(BananaMan.bakeBananaBread).toHaveBeenCalledWith('bananas');
+
+      await bakeBananaBreadSpy.mockResolveNext('banana bread');
+
+      expect(await promise).toEqual('banana bread');
+    });
+  });
+
+  describe('makeBananaBread branching', () => {
+    let promise : Promise<BananaBread>;
+    let goBuyBananasSpy: AsyncSpy<Banana>;
+    let bakeBananaBreadSpy: AsyncSpy<BananaBread>;
+
+    beforeEach(() => {
+      goBuyBananasSpy = spyOnAsync(BananaMan, 'goBuyBananas');
+      bakeBananaBreadSpy = spyOnAsync(BananaMan, 'bakeBananaBread');
+
+      promise = makeBananaBread(2);
+    });
+
+    it('buys some bananas', async () => {
+      expect(BananaMan.goBuyBananas).toHaveBeenCalledWith(2);
+    });
+
+    describe('when store has bananas', () => {
+      beforeEach(async () => {
+        await goBuyBananasSpy.mockResolveNext('bananas');
+      });
+
+      it('bakes those bananas', async () => {
+        expect(BananaMan.bakeBananaBread).toHaveBeenCalledWith('bananas');
+      });
+    });
+
+    describe('when store is out of bananas', () => {
+      beforeEach(async () => {
+        await goBuyBananasSpy.mockRejectNext('no bananas');
+      });
+
+      it('does not bake them bananas', async () => {
+        await expect(promise).rejects.toBeDefined()
+        expect(BananaMan.bakeBananaBread).not.toHaveBeenCalled();
       });
     });
   });

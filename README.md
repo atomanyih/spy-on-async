@@ -26,39 +26,41 @@ Designed to be used with jest.
 ### spying on a method
 
 ```js
-// src/makeBananaBread.js
-import ModuleWithAsyncStuff from './ModuleWithAsyncStuff'; 
+// src/makeBananaBread.ts
+import BananaMan from './BananaMan'; 
 
-const makeBananaBread = async (numBananas) => {
-  const bananas = await ModuleWithAsyncStuff.goBuyBananas(numBananas);
-  const bananaBread = await ModuleWithAsyncStuff.bakeBananaBread(bananas);
-  return bananaBread;
-}
+const makeBananaBread = async (numBananas: number) => {
+  const bananas = await BananaMan.goBuyBananas(numBananas);
+
+  return BananaMan.bakeBananaBread(bananas);
+};
 
 export default makeBananaBread;
 ```
 
 ```js
-// __tests__/makeBananaBread.test.js
+// __tests__/makeBananaBread.spec.ts
 import makeBananaBread from '../src/makeBananaBread';
-import ModuleWithAsyncStuff from '../src/ModuleWithAsyncStuff'; 
+import BananaMan from '../src/BananaMan'; 
 
 describe('makeBananaBread', () => {
   it('calls some methods', async () => {
-    spyOnAsync(ModuleWithAsyncStuff, 'goBuyBananas');
-    spyOnAsync(ModuleWithAsyncStuff, 'bakeBananaBread');
-    
+    const goBuyBananasSpy = spyOnAsync(BananaMan, 'goBuyBananas');
+    const bakeBananaBreadSpy = spyOnAsync(BananaMan, 'bakeBananaBread');
+  
+    spyOnAsync(BananaMan, 'bakeBananaBread');
+  
     const promise = makeBananaBread(2);
-    
-    expect(ModuleWithAsyncStuff.goBuyBananas).toHaveBeenCalledWith(2);
-    
-    await ModuleWithAsyncStuff.goBuyBananas.mock.resolve('bananas'); 
+  
+    expect(BananaMan.goBuyBananas).toHaveBeenCalledWith(2);
+  
+    await goBuyBananasSpy.mockResolveNext('bananas');
     // awaiting ensures the method continues execution before we do our next assertion
-    
-    expect(ModuleWithAsyncStuff.bakeBananaBread).toHaveBeenCalledWith('bananas');
-    
-    await ModuleWithAsyncStuff.bakeBananaBread.mock.resolve('banana bread');
-    
+  
+    expect(BananaMan.bakeBananaBread).toHaveBeenCalledWith('bananas');
+  
+    await bakeBananaBreadSpy.mockResolveNext('banana bread');
+  
     expect(await promise).toEqual('banana bread');
   });
 });
@@ -71,36 +73,39 @@ import makeBananaBread from '../src/makeBananaBread';
 import ModuleWithAsyncStuff from '../src/ModuleWithAsyncStuff'; 
 
 describe('makeBananaBread', () => {
-  let promise;
-
+  let promise : Promise<BananaBread>;
+  let goBuyBananasSpy: AsyncSpy<Banana>;
+  let bakeBananaBreadSpy: AsyncSpy<BananaBread>;
+  
   beforeEach(() => {
-    spyOnAsync(ModuleWithAsyncStuff, 'goBuyBananas');
-    spyOnAsync(ModuleWithAsyncStuff, 'bakeBananaBread');
-    
-    promise = makeBananaBread('arg1');
+    goBuyBananasSpy = spyOnAsync(BananaMan, 'goBuyBananas');
+    bakeBananaBreadSpy = spyOnAsync(BananaMan, 'bakeBananaBread');
+  
+    promise = makeBananaBread(2);
   });
-
+  
   it('buys some bananas', async () => {
-    expect(ModuleWithAsyncStuff.goBuyBananas).toHaveBeenCalledWith('arg1');
+    expect(BananaMan.goBuyBananas).toHaveBeenCalledWith(2);
   });
   
   describe('when store has bananas', () => {
-    beforeEach(async () => {    
-      await ModuleWithAsyncStuff.goBuyBananas.mock.resolve('bananas'); 
+    beforeEach(async () => {
+      await goBuyBananasSpy.mockResolveNext('bananas');
     });
   
     it('bakes those bananas', async () => {
-      expect(ModuleWithAsyncStuff.bakeBananaBread).toHaveBeenCalledWith('bananas');
+      expect(BananaMan.bakeBananaBread).toHaveBeenCalledWith('bananas');
     });
   });
   
-  describe('when store is out of bananas', async () => {
+  describe('when store is out of bananas', () => {
     beforeEach(async () => {
-      await ModuleWithAsyncStuff.goBuyBananas.mock.reject('no bananas');
+      await goBuyBananasSpy.mockRejectNext('no bananas');
     });
-    
-    it('does not bake them bananas', () => {
-      expect(ModuleWithAsyncStuff.bakeBananaBread).not.toHaveBeenCalled();
+  
+    it('does not bake them bananas', async () => {
+      await expect(promise).rejects.toBeDefined()
+      expect(BananaMan.bakeBananaBread).not.toHaveBeenCalled();
     });
   });
 });
