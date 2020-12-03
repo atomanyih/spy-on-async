@@ -10,13 +10,29 @@ npm install --save-dev spy-on-async
 
 Designed to be used with jest.
 
-### jest configuration
+### setup:
+
+Create a test setup file (or add to an existing one).
+This will ensure that a mocked method will not return a promise resolved from a previous test.
 
 ```
+// ./path/to/resetAsyncMocks.ts
+import {resetAllPromises} from "spy-on-async";
+
+beforeEach(() => {
+  resetAllPromises();
+});
+```
+
+```
+// jest.config.js
 {
-    "restoreMocks": true,
-    "resetMocks": false, 
-    "clearMocks": false,
+  "restoreMocks": true,
+  "resetMocks": false, 
+  "clearMocks": false,
+  "setupFilesAfterEnv": [
+    "<rootDir>/path/to/resetAsyncMocks.ts,
+  ]
 }
 ```
 `resetMocks` and `clearMocks` should be disabled by default.
