@@ -2,7 +2,7 @@ module.exports = {
   preset: 'ts-jest',
   restoreMocks: true,
   "testMatch": [
-    "<rootDir>/__tests__/**/*.ts?(x)",
+    "<rootDir>/__tests__/**/*.spec.ts?(x)",
   ],
   globals: {
     'ts-jest': {
