@@ -1,4 +1,4 @@
-import {AsyncSpy, spyOnAsync} from "../src";
+import {AsyncMock, AsyncSpy, spyOnAsync} from "../src";
 
 describe('makeBananaBread', () => {
   const SomeGuy = {
@@ -33,11 +33,11 @@ describe('makeBananaBread', () => {
 
   describe('if bananaTown has bananas', () => {
     beforeEach(async () => {
-      await goBuyBananasSpy.mockResolveNext(['banana', 'banana']);
+      // await goBuyBananasSpy.mockResolveNext(['banana', 'banana']);
 
       // // alternately, you can cast to an AsyncMock:
       // // if anyone can explain why I need to cast as jest.Mock before casting to AsyncMock, I will give you a hug
-      // await ((SomeGuy.goBuyBananas as jest.Mock) as AsyncMock).mockResolveNext(['banana', 'banana'])
+      await ((SomeGuy.goBuyBananas as jest.Mock) as AsyncMock).mockResolveNext(['banana', 'banana'])
 
     });
 

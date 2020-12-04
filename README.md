@@ -136,3 +136,18 @@ import {createAsyncMock} from "spy-on-async";
 
 export const someMethod = createAsyncMock<ResolveType>();
 ```
+
+## Appendix
+
+### Accessing async spy from module
+
+Though the examples above save the spy to a variable, you can also access the spy via the spied module:
+
+`await MockedModule.asyncMethod.mockResolveNext(value)`
+
+If you aren't writing typescript, this way is fluent and makes clear which module has been spied on.
+However, in typescript you need to cast the method as a mock.
+For whatever reason, it is necessary to first cast to `jest.Mock`. If anyone can fix this, I will give them a big ol hug. 
+
+`await ((MockedModule.asyncMethod as jest.Mock) as AsyncMock).mockResolveNext(value)` 
+ 
