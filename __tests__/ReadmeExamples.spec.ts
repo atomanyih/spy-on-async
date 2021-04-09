@@ -1,9 +1,10 @@
-import {AsyncMock, AsyncSpy, spyOnAsync} from "../src";
+import { AsyncMock, AsyncSpy, spyOnAsync } from '../src';
 
 describe('makeBananaBread', () => {
   const SomeGuy = {
-    goBuyBananas: (location: string, numBananas: number) => Promise.reject("don't call me"),
-    bakeBananaBread: (numBananas: number) => Promise.reject("don't call me")
+    goBuyBananas: (location: string, numBananas: number) =>
+      Promise.reject("don't call me"),
+    bakeBananaBread: (numBananas: number) => Promise.reject("don't call me"),
   };
 
   const makeBananaBread = async (numBananas: number) => {
@@ -37,12 +38,17 @@ describe('makeBananaBread', () => {
 
       // // alternately, you can cast to an AsyncMock:
       // // if anyone can explain why I need to cast as jest.Mock before casting to AsyncMock, I will give you a hug
-      await ((SomeGuy.goBuyBananas as jest.Mock) as AsyncMock).mockResolveNext(['banana', 'banana'])
-
+      await ((SomeGuy.goBuyBananas as jest.Mock) as AsyncMock).mockResolveNext([
+        'banana',
+        'banana',
+      ]);
     });
 
     it('bakes those bananas', async () => {
-      expect(SomeGuy.bakeBananaBread).toHaveBeenCalledWith(['banana', 'banana']);
+      expect(SomeGuy.bakeBananaBread).toHaveBeenCalledWith([
+        'banana',
+        'banana',
+      ]);
     });
   });
 
@@ -61,7 +67,10 @@ describe('makeBananaBread', () => {
       });
 
       it('bakes those bananas', async () => {
-        expect(SomeGuy.bakeBananaBread).toHaveBeenCalledWith(['banana', 'banana']);
+        expect(SomeGuy.bakeBananaBread).toHaveBeenCalledWith([
+          'banana',
+          'banana',
+        ]);
       });
     });
 
@@ -71,7 +80,7 @@ describe('makeBananaBread', () => {
       });
 
       it('is sad', async () => {
-        await expect(promise).rejects.toMatch('no bananas')
+        await expect(promise).rejects.toMatch('no bananas');
       });
     });
   });
@@ -82,9 +91,11 @@ describe('spyOnAsync example', () => {
   type BananaBread = string;
 
   const BananaMan = {
-    goBuyBananas: (numBananas: number): Promise<Banana[]> => Promise.reject('broken'),
-    bakeBananaBread: (bananas: Banana[]): Promise<BananaBread> => Promise.reject('broken'),
-  }
+    goBuyBananas: (numBananas: number): Promise<Banana[]> =>
+      Promise.reject('broken'),
+    bakeBananaBread: (bananas: Banana[]): Promise<BananaBread> =>
+      Promise.reject('broken'),
+  };
 
   const makeBananaBread = async (numBananas: number) => {
     const bananas = await BananaMan.goBuyBananas(numBananas);
