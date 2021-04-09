@@ -52,7 +52,7 @@ const multipleCalls = <ResolveType>(createMockImplementation: <T>() => AsyncMock
     resolve(val?: ResolveType) {
       const call = calls.pop();
       if(!call) {
-        throw 'No calls yo'
+        throw new Error('Async Mock has not been called')
       }
 
       return call.resolve(val);
@@ -60,7 +60,7 @@ const multipleCalls = <ResolveType>(createMockImplementation: <T>() => AsyncMock
     reject(val?: any) {
       const call = calls.pop();
       if(!call) {
-        throw 'No calls yo'
+        throw new Error('Async Mock has not been called')
       }
 
       return call.reject(val);
