@@ -11,9 +11,9 @@ declare class AsyncMocker {
     private _resetRegistry;
     constructor();
     resetAllPromises: () => void;
-    createAsyncMock: <ResolveType>() => AsyncMock<ResolveType, any>;
-    createAsyncMockSingleton: <ResolveType>() => AsyncMock<ResolveType, any>;
-    spyOnAsync: <ResolveType>(module: any, methodName: string) => AsyncSpy<ResolveType, any>;
+    createAsyncMock: <ResolveType, ArgsType extends any[] = any>() => AsyncMock<ResolveType, ArgsType>;
+    createAsyncMockSingleton: <ResolveType, ArgsType extends any[]>() => AsyncMock<ResolveType, ArgsType>;
+    spyOnAsync: <ResolveType, ArgsType extends any[]>(module: any, methodName: string) => AsyncSpy<ResolveType, any>;
 }
 declare const mocker: AsyncMocker;
 export default mocker;

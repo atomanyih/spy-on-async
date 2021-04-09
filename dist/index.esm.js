@@ -1,3 +1,4 @@
+// import ArgsType = jest.ArgsType;
 var createMockCall = function () {
     var resolvePromise;
     var rejectPromise;
@@ -19,7 +20,7 @@ var createMockCall = function () {
             return promise["catch"](function () { return val; });
         },
         call: function () { return promise; },
-        reset: resetPromise
+        reset: resetPromise,
     };
 };
 var multipleCalls = function (createMockImplementation) { return function () {
@@ -28,25 +29,29 @@ var multipleCalls = function (createMockImplementation) { return function () {
         resolve: function (val) {
             var call = calls.pop();
             if (!call) {
-                throw 'No calls yo';
+                throw new Error('Async Mock has not been called');
             }
             return call.resolve(val);
         },
         reject: function (val) {
             var call = calls.pop();
             if (!call) {
-                throw 'No calls yo';
+                throw new Error('Async Mock has not been called');
             }
             return call.reject(val);
         },
         call: function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
             var call = createMockImplementation();
             calls.unshift(call);
-            return call.call();
+            return call.call.apply(call, args);
         },
         reset: function () {
             calls = [];
-        }
+        },
     };
 }; };
 var AsyncMocker = /** @class */ (function () {
@@ -60,7 +65,7 @@ var AsyncMocker = /** @class */ (function () {
             _this._resetRegistry.add(reset);
             var fn = Object.assign(jest.fn(), {
                 mockResolveNext: resolve,
-                mockRejectNext: reject
+                mockRejectNext: reject,
             });
             fn.mockImplementation(call);
             return fn;
@@ -70,7 +75,7 @@ var AsyncMocker = /** @class */ (function () {
             _this._resetRegistry.add(reset);
             var fn = Object.assign(jest.fn(), {
                 mockResolveNext: resolve,
-                mockRejectNext: reject
+                mockRejectNext: reject,
             });
             fn.mockImplementation(call);
             return fn;
@@ -83,7 +88,7 @@ var AsyncMocker = /** @class */ (function () {
             var fn = jest.spyOn(module, methodName).mockImplementation(call);
             return Object.assign(fn, {
                 mockResolveNext: resolve,
-                mockRejectNext: reject
+                mockRejectNext: reject,
             });
         };
         this._resetRegistry = new Set();
